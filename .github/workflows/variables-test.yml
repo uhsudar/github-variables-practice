@@ -1,0 +1,64 @@
+name: Variables Test Pipeline
+
+on: [push, pull_request]
+
+jobs:
+  show-variables:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Show all environment variables
+        run: |
+          echo "=== SYSTEM VARIABLES ==="
+          echo "GITHUB_REPOSITORY: $GITHUB_REPOSITORY"
+          echo "GITHUB_REF: $GITHUB_REF"
+          echo "GITHUB_SHA: $GITHUB_SHA"
+          echo "GITHUB_WORKFLOW: $GITHUB_WORKFLOW"
+          echo "GITHUB_RUN_ID: $GITHUB_RUN_ID"
+          echo ""
+          echo "=== CUSTOM VARIABLES ==="
+          echo "NODE_ENV: $NODE_ENV"
+          echo "CUSTOM_VAR: $CUSTOM_VAR"
+          echo ""
+          echo "=== SECRET VARIABLES ==="
+          echo "API Key exists: ${{ secrets.API_KEY != '' }}"
+
+      - name: Set custom variable
+        run: echo "CUSTOM_VAR=hello-world" >> $GITHUB_ENV
+
+      - name: Show custom variable
+        run: echo "Custom variable: $CUSTOM_VAR"
+
+      - name: Run Node.js app
+        run: |
+          echo "Running Node.js application..."
+          node app.js
+        env:
+          NODE_ENV: ${{ vars.NODE_ENV }}
+          API_KEY: ${{ secrets.API_KEY }}
+
+  test-staging:
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Test staging environment
+        run: |
+          echo "Testing staging environment..."
+          echo "Staging DB URL exists: ${{ secrets.STAGING_DB_URL != '' }}"
+
+  test-production:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Test production environment
+        run: |
+          echo "Testing production environment..."
+          echo "Production DB URL exists: ${{ secrets.PROD_DB_URL != '' }}"
